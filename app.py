@@ -2,8 +2,9 @@
 
 import streamlit as st
 import pandas as pd
+import matplotlib as plt
 
-df = pd.read_csv('c:/Users/user/Desktop/brief06/notebook/financecore_clean.csv')
+df = pd.read_csv('financecore_clean.csv')
 df['date_transaction'] = pd.to_datetime(df['date_transaction'])
 
 volume_total = df['montant_eur'].abs().sum()
@@ -15,10 +16,10 @@ st.set_page_config(page_title="Executive View", layout="wide")
 st.title(" Tableau de Bord : Vue Exécutive")
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Volume Total", f"{volume_total:,.0f} €")
-col2.metric("CA Total", f"{ca_total:,.0f} €")
+col1.metric("Volume Total", f"{volume_total:,.0f} ")
+col2.metric("CA Total", f"{ca_total:,.0f} ")
 col3.metric("Clients Actifs", f"{clients_actifs}")
-col4.metric("Marge Moyenne", f"{marge_moyenne:,.2f} €")
+col4.metric("Marge Moyenne", f"{marge_moyenne:,.2f} ")
 
 import plotly.graph_objects as go
 
@@ -136,8 +137,8 @@ import matplotlib.pyplot as plt
 import streamlit as st
 
 st.title(" Analyse des Risques et Conformité")
-df_risk = df[['score_credit_client', 'montant_eur', 'is_outlier_montant']].copy()
-df_risk['is_outlier_montant'] = df_risk['is_outlier_montant'].astype(int)
+df_risk = df[['score_credit_client', 'montant_eur', 'is_anomaly']].copy()
+df_risk['is_anomaly'] = df_risk['is_anomaly'].astype(int)
 corr_matrix = df_risk.corr()
 st.subheader("Heatmap : Corrélation entre Risques et Transactions")
 
@@ -162,7 +163,7 @@ fig = px.scatter(
     df,
     x="score_credit_client",
     y="montant_eur",
-    color="is_outlier_montant",  
+    color="is_anomaly",  
     hover_data=["score_credit_client", "montant_eur"],
     title="Relation entre Score Crédit et Montant"
 )
@@ -177,7 +178,7 @@ df_risk = df.copy()
 
 df_risk["risk_score"] = (
     (1 - df_risk["score_credit_client"] / df_risk["score_credit_client"].max()) * 0.5
-    + df_risk["is_outlier_montant"] * 0.5
+    + df_risk["is_anomaly"] * 0.5
 )
 
 top10 = df_risk.sort_values("risk_score", ascending=False).head(10)
@@ -211,11 +212,11 @@ produit = st.sidebar.multiselect(
     options=df["produit"].unique(),
     default=df["produit"].unique()
 )
-year_min = int(df["annee"].min())
-year_max = int(df["annee"].max())
+year_min = int(df["annees"].min())
+year_max = int(df["annees"].max())
 
-annee = st.sidebar.slider(
-    "Période (années)",
+annees = st.sidebar.slider(
+    "Période (annees)",
     min_value=year_min,
     max_value=year_max,
     value=(year_min, year_max)
@@ -224,7 +225,7 @@ df_filtered = df[
     (df["agence"].isin(agence)) &
     (df["segment_client"].isin(segment)) &
     (df["produit"].isin(produit)) &
-    (df["annee"].between(annee[0], annee[1]))
+    (df["annees"].between(annees[0], annees[1]))
 ]
 st.write(f"Données filtrées : {len(df_filtered)} lignes")
 
@@ -242,7 +243,7 @@ fig1 = px.scatter(
     df_filtered,
     x="score_credit_client",
     y="montant_eur",
-    color="is_outlier_montant",
+    color="is_anomaly",
     hover_data=["score_credit_client", "montant_eur"]
 )
 st.plotly_chart(fig1, use_container_width=True)
@@ -273,11 +274,11 @@ st.plotly_chart(fig3, use_container_width=True)
 
 st.subheader("Évolution des Transactions")
 
-evolution = df_filtered.groupby("annee")["montant_eur"].sum().reset_index()
+evolution = df_filtered.groupby("annees")["montant_eur"].sum().reset_index()
 
 fig4 = px.line(
     evolution,
-    x="annee",
+    x="annees",
     y="montant_eur",
     markers=True
 )
