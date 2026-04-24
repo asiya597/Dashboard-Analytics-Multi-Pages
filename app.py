@@ -2,7 +2,7 @@
 
 import streamlit as st
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 df = pd.read_csv('financecore_clean.csv')
 df['date_transaction'] = pd.to_datetime(df['date_transaction'])
@@ -147,6 +147,8 @@ sns.heatmap(
     corr_matrix, 
     annot=True,     
     cmap='RdYlGn',   
+
+    
     fmt=".2f",      
     linewidths=0.5, 
     ax=ax
@@ -154,20 +156,6 @@ sns.heatmap(
 st.pyplot(fig)
 
 
-#Scatter plot : score crédit vs montant transaction, coloré par catégorie de risque
-import plotly.express as px
-import streamlit as st
-
-st.subheader("Score Crédit vs Montant (par catégorie de risque)")
-fig = px.scatter(
-    df,
-    x="score_credit_client",
-    y="montant_eur",
-    color="is_anomaly",  
-    hover_data=["score_credit_client", "montant_eur"],
-    title="Relation entre Score Crédit et Montant"
-)
-st.plotly_chart(fig, use_container_width=True)
 
 
 #Tableau des 10 clients les plus à risque avec indicateurs visuels colorés
@@ -260,17 +248,7 @@ fig2 = px.bar(
 )
 st.plotly_chart(fig2, use_container_width=True)
 
-st.subheader(" Répartition des Clients par Segment")
 
-segment_data = df_filtered["segment_client"].value_counts().reset_index()
-segment_data.columns = ["segment_client", "count"]
-
-fig3 = px.pie(
-    segment_data,
-    names="segment_client",
-    values="count"
-)
-st.plotly_chart(fig3, use_container_width=True)
 
 st.subheader("Évolution des Transactions")
 
